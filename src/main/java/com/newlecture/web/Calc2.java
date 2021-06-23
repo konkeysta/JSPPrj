@@ -5,62 +5,81 @@ import java.io.IOException;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
-@WebServlet("/calc")
+@WebServlet("/calc2")
 public class Calc2 extends HttpServlet {
 
 	protected void service(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		ServletContext application = request.getServletContext();
-		// 어플리케이션 저장소로 자원을 저장한다. (v_, op)
+		HttpSession session = request.getSession();
+		Cookie[] cookies = request.getCookies();
 
 		response.setCharacterEncoding("UTF-8");
 		response.setContentType("text/html;charset=UTF-8");
 
-		String v_ = request.getParameter("v"); // 입력되는 값
+		String v_ = request.getParameter("v");
 		String op = request.getParameter("operator");
 
-		int v = 0; // 값을 입력받지 않을 시 0으로 처리
+		int v = 0;
+		if (!v_.equals("")) v = Integer.parseInt(v_);
 
-		if (!v_.equals(""))
-			v = Integer.parseInt(v_);
+		if (op.equals("=")) {
 
-		if (op.equals("=")) {  // 계산
+//			int x = (Integer) application.getAttribute("value");
+//			int x = (Integer) session.getAttribute("value");
+			int x = 0;
+			for(Cookie c : cookies)
+				if(c.getName().equals("value")) { 
+					x = Integer.parseInt(c.getValue());
+				break;
+			}
+		
+			
+		int y = v;
+		
+//			String operator = (String) application.getAttribute("op");
+//			String operator = (String) session.getAttribute("op");
+		String operator = "";
+		 for(Cookie c : cookies)
+			if(c.getName().equals("op")) {
+				operator = c.getValue();
+			break;
+		}
+		 
+		
+		int result = 0;
 
-			int x = (Integer) application.getAttribute("value"); // 저장소에 저장된 값, Object 로 반환
-			int y = v; // 사용자가 전달한 값
-			String operator = (String) application.getAttribute("op"); // 저장소에 저장된 계산 값
-
-			int result = 0;
-
-			if (operator.equals("+")) {
-				result = x + y;
-			} else
-				result = x - y;
-	
-			response.getWriter().printf("result is %d\n", result);
-
-		} else { // 값을 저장
-			application.setAttribute("value", v);
-			application.setAttribute("op", op);
-			// 컬렉션(Map) 처럼 이용
+		if (operator.equals("+"))
+			result = x + y;
+		else
+			result = x - y;
+		
+		response.getWriter().printf("result is %d\n", result);
+	}
+		else {
 			
 
+	
+//			application.setAttribute("value", v);
+//			application.setAttribute("op", op);
+//			session.setAttribute("value", v);
+//			session.setAttribute("op", op);
+		Cookie valueCookie = new Cookie("value", String.valueOf(v));
+		Cookie opCookie = new Cookie("op", op);
+		valueCookie.setPath("/calc2");
+		valueCookie.setMaxAge(1000);
+		
+		opCookie.setPath("/calc2");
+		response.addCookie(valueCookie);
+		response.addCookie(opCookie); // response 의 Header 에 심어진다.
 		}
 
-	}
-
-	protected void doGet(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		service(request, response);
-	}
-
-	protected void doPost(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		service(request, response);
 	}
 
 }
