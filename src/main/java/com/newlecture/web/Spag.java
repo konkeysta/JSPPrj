@@ -32,6 +32,7 @@ public class Spag extends HttpServlet {
 		request.setAttribute("names", names);
 		//redirect: 새로운 요청을 하게 만듬
 		//forward: 현재 작업한 내용을 이어갈 수 있도록 함
+		
 		RequestDispatcher dispatcher = request.getRequestDispatcher("spag.jsp"); // 요청 전달
 		dispatcher.forward(request, response);
 	}
